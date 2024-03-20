@@ -55,6 +55,19 @@ app.post('/api/links', async (request, reply) => {
   return reply.status(201).send({ shortLinkId: link.id }) // 200 -> sucesso | 201 -> Registro criado com sucesso
 })
 
+app.get('/api/metrics', async () => {
+  const result = await redis.zRangeByScoreWithScores('metrics', 0, 50)
+
+  const metrics = result.sort((a, b) => b.score - a.score).map(item => {
+    return {
+      shortLinkId: Number(item.value),
+      clicks: item.score,
+    }
+  })
+
+  return metrics
+})
+
 app.listen({
   port: 3333,
 }).then(() => {
